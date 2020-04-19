@@ -1,16 +1,24 @@
 Light = class("Light", Entity)
+Light.static.circImages = {}
 
 function Light.static.createCircularImage(radius, inner, intensity)
-  local data = love.image.newImageData(radius * 2, radius * 2)
   inner = inner or 0
   intensity = intensity or 1
+
+  if Light.circImages[radius*intensity] then
+    return Light.circImages[radius*intensity]
+  end
+
+  local data = love.image.newImageData(radius * 2, radius * 2)
 
   data:mapPixel(function(x, y)
     local dist = math.dist(radius, radius, x, y)
     return 1, 1, 1, ease.circIn((dist <= radius and math.min(1, math.scale(dist, inner, radius, 1 * intensity, 0)) or 0))
   end)
   
-  return love.graphics.newImage(data)
+  local im = love.graphics.newImage(data)
+  Light.circImages[radius*inner*intensity] = im
+  return im
 end
 
 function Light.static.createRectImage(width, height, innerWidth, intensity)
@@ -28,7 +36,7 @@ end
 
 function Light.static.fromData(light)
   local img = Light.createCircularImage(light.values.radius, light.values.innerRadius, light.values.intensity)
-  local l = Light:new(img, light.x, light.y, light.values.radius)
+  local l = Light:new(img, light.x, light.y, light.values.radius, light.values.flicker)
 
   if light.values.setColor == "NONE" then
     local r, g, b, a = levelColorToRGBA(light.values.color)

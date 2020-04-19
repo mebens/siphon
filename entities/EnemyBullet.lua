@@ -83,7 +83,7 @@ end
 
 function EnemyBullet:collided(other)
   if other:isInstanceOf(Player) and not self.dead then
-    other:damage(self.damage)
+    other:damage(self.damage, self.angle)
   elseif other:isInstanceOf(Rocket) then
     other:explode()
   end

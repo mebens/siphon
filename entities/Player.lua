@@ -3,17 +3,18 @@ Player.SPEED = 1500
 Player.DASH_FORCE = 1000
 Player.BASE_HEALTH = 100
 Player.MAX_HEALTH = 150
+Player.RESPAWN_HEALTH = 100
 Player.HEALTH_DRAIN = 2
 
-Player.DASH_COOLDOWN = 0.8
+Player.SPOOF_COOLDOWN = 0.8
 Player.RAIL_COOLDOWN = 0.8
 Player.ROCKET_COOLDOWN = 1.2
 
 Player.LS_RATE = 35
-Player.LS_CONVERSION = 0.5
+Player.LS_CONVERSION = 1
 Player.LS_MOVEMENT = 0.1
-Player.LS_RANGE = 80
-Player.LS_SPREAD = math.tau / 2
+Player.LS_RANGE = 120
+Player.LS_SPREAD = math.tau
 Player.LS_COOLDOWN = 2
 
 Player.LS_LIGHT_HEIGHT = 50
@@ -37,10 +38,7 @@ function Player:initialize(x, y)
   self.health = self.BASE_HEALTH
 
   -- timers
-  self.railTimer = 0
-  self.rocketTimer = 0
-  self.lsCooldownTimer = 0
-  self.dashTimer = 0
+  self:resetStats()
 
   -- particles
   local ps = love.graphics.newParticleSystem(assets.images.smoke, 500)
@@ -82,6 +80,14 @@ function Player:initialize(x, y)
   self.siphonSfx:setVolume(self.siphonVolume)
 end
 
+function Player:resetStats()
+  self.railTimer = 0
+  self.rocketTimer = 0
+  self.lsCooldownTimer = 0
+  self.dashTimer = 0
+  self.lsTarget = nil
+end
+
 function Player:added()
   self:setupBody()
   self.fixture = self:addShape(love.physics.newRectangleShape(self.width, self.height))
@@ -91,9 +97,12 @@ function Player:added()
 end
 
 function Player:update(dt)
-  PhysicalEntity.update(self, dt)
   self.lsSmokePS:update(dt)
   self.lsWhirlPS:update(dt)
+
+  if self.dead then return end
+
+  PhysicalEntity.update(self, dt)
   self:setAngularVelocity(0)
 
   -- health drain
@@ -120,13 +129,15 @@ function Player:update(dt)
 
   -- dash
   if self.dashTimer > 0 then
-    self.dashTimer = self.dashTimer - dt
+    if not self.lsTarget then
+      self.dashTimer = self.dashTimer - dt
+    end
 
     if self.dashTimer <= 0 then
       -- playSound("ability4")
     end
   elseif input.down("dash") and self.moveDirection then
-    self:dash(self.moveDirection)
+    self:pingSpoof(self.moveDirection)
   end
 
   -- life steal
@@ -171,39 +182,46 @@ function Player:update(dt)
 end
 
 function Player:draw()
-  if self.lsTarget then
-    love.graphics.line(self.x, self.y, self.lsTarget.x, self.lsTarget.y)
-  end
+  -- if self.lsTarget then
+  --   love.graphics.line(self.x, self.y, self.lsTarget.x, self.lsTarget.y)
+  -- end
 
   love.graphics.draw(self.lsSmokePS)
   love.graphics.draw(self.lsWhirlPS)
-  self.legMap:draw(self.x, self.y, self.moveDirection, 1.6, 1.6, 11 / 2, 12 / 2)
-  self:drawImage()
+
+  if not self.dead then
+    self.legMap:draw(self.x, self.y, self.moveDirection, 1.6, 1.6, 11 / 2, 12 / 2)
+    self:drawImage()
+  end
 end
 
 function Player:attackRailgun()
   self.world:add(Rail:new(self.x, self.y, self.angle))
-  self.railTimer = self.RAIL_COOLDOWN
+  self.railTimer = NO_COOLDOWNS and 0 or self.RAIL_COOLDOWN
   playRandom{"rail1", "rail2"}
 end
 
 function Player:attackRocket()
   self.world:add(Rocket:new(self.x, self.y, self.angle))
-  self.rocketTimer = self.ROCKET_COOLDOWN
+  self.rocketTimer = NO_COOLDOWNS and 0 or self.ROCKET_COOLDOWN
   playRandom{"rocket1", "rocket2", "rocket3"}
 end
 
-function Player:dash(angle)
+function Player:pingSpoof(angle)
   self:applyLinearImpulse(self.DASH_FORCE * math.cos(angle), self.DASH_FORCE * math.sin(angle))
-  self.dashTimer = self.DASH_COOLDOWN
+  self.dashTimer = NO_COOLDOWNS and 0 or self.SPOOF_COOLDOWN
   playRandom{"dash1", "dash2"}
 end
 
-function Player:damage(amount)
+function Player:damage(amount, angle)
   self.health = math.clamp(self.health - amount, 0, self.MAX_HEALTH)
 
   if amount > 5 then
     self.world.hud:playerDamaged()
+
+    if angle then
+      self.world:add(BloodSpurt:new(self.x, self.y, angle, 2, 2, 1, CYAN))
+    end
   end
 
   if self.health <= 0 then
@@ -212,7 +230,29 @@ function Player:damage(amount)
 end
 
 function Player:die()
-  DEBUG = "oh shid"
+  if self.dead then return end
+  self.dead = true
+
+  for i = 1, 3 do
+    self.world:add(BloodSpurt:new(
+      self.x, self.y, math.tau * math.random(), self.DEATH_BLOOD_SCATTER, self.DEATH_BLOOD_SCATTER, 1, CYAN
+    ))
+  end
+
+  self.siphonSfx:stop()
+  self.world:remove(self.lsLight)
+  self.world.hud:playerNotHealing()
+  playSound("splat")
+
+  delay(1, function()
+    if self.world.checkpoint then
+      self.world.checkpoint:use()
+    else
+      ammo.world = Level:new(self.world.name)
+    end
+
+    self.world = nil
+  end)
 end
 
 function Player:lifeSteal(dt)
@@ -248,11 +288,11 @@ function Player:startLifeSteal()
   local closetDist = nil
 
   for e in Enemy.all:iterate() do
-    local angDiff = math.abs(math.angle(self.x, self.y, e.x, e.y) - self.angle)
+    -- local angDiff = math.abs(math.angle(self.x, self.y, e.x, e.y) - self.angle)
     local dist = math.dist(self.x, self.y, e.x, e.y)
-
+    ammo.db.log(dist, self.x, self.y, e.x, e.y)
     -- if they're in range and we're facing them well enough
-    if angDiff < self.LS_SPREAD / 2 and dist < self.LS_RANGE then
+    if dist < self.LS_RANGE and not e:isInstanceOf(EnemyTank) then
       if (closestDist ~= nil and dist < closestDist) or closest == nil then
         closest = e
         closestDist = dist
@@ -279,7 +319,7 @@ function Player:endLifeSteal()
 
   self.lsTarget:isNotTarget()
   self.lsTarget = nil
-  self.lsCooldownTimer = self.LS_COOLDOWN
+  self.lsCooldownTimer = NO_COOLDOWNS and 0 or self.LS_COOLDOWN
   self.lsSmokePS:stop()
   self.lsWhirlPS:stop()
   self.world:remove(self.lsLight, self.lsCLight)

@@ -109,7 +109,7 @@ function Rocket:explode()
   self.world:remove(self.light)
 
   -- floor highlights
-  self.world.floor:addHighlight(self.x, self.y)
+  self.world.floor:addHighlight(self.x, self.y, 1, chooseColor(math.random(1, 2)))
 
   for radiusI = 1, 7 do
     delay(0.06 * radiusI, function()

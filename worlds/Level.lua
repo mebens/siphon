@@ -2,6 +2,8 @@ Level = class("Level", PhysicalWorld)
 
 function Level:initialize(levelName)
   PhysicalWorld.initialize(self)
+  Enemy.resetList()
+  self.name = levelName
   self.shakeTimer = 0
 
   self:setupLayers{
@@ -18,13 +20,13 @@ function Level:initialize(levelName)
     [10] = 1, -- floor
   }
 
-  levelName = levelName or "test"
+  levelName = levelName or "1"
   local fileContent = love.filesystem.read("assets/levels/" .. levelName .. ".json")
   self.data = json.decode(fileContent)
 
   self.width = self.data.width
   self.height = self.data.height
-  self.camera:setBounds(0, 0, love.graphics.width, love.graphics.height)
+  self.camera:setBounds(0, 0, self.width, self.height)
   self:addTiles()
   self:addLighting(40)
   self:addEntities()
@@ -39,7 +41,7 @@ function Level:addTiles()
   self.walls:setTiles(self:getLayerData("Walls"))
   self.walls:setCollision(self:getLayerData("Collision"))
   self.floor = Floor:new(self.width, self.height)
-  self.floor:setTiles(self:getLayerData("Floor"))
+  -- self.floor:setTiles(self:getLayerData("Floor"))
   self:add(self.walls, self.floor)
 end
 
@@ -53,12 +55,19 @@ function Level:addLighting()
 end
 
 function Level:addEntities()
+  local checkpoints = 0
+
   for i, entity in ipairs(self:getLayerData("Entities")) do
     if entity.name == "Player" and not self.player then
       self.player = Player:new(entity.x, entity.y)
       self:add(self.player)
     elseif entity.name == "Enemy" then
       self:add(Enemy.fromData(entity))
+    elseif entity.name == "CheckPoint" then
+      checkpoints = checkpoints + 1
+      self:add(CheckPoint:new(checkpoints, entity.x, entity.y, entity.width, entity.height))
+    elseif entity.name == "EndPoint" then
+      self:add(EndPoint:new(entity.x, entity.y, entity.width, entity.height, entity.values.link))
     end
   end
 end
@@ -89,7 +98,7 @@ function Level:update(dt)
 
   self.camera.x = self.player.x
   self.camera.y = self.player.y
-  -- self.camera:bind()
+  self.camera:bind()
   self.camera.x = self.camera.x + self.shakeX
   self.camera.y = self.camera.y + self.shakeY
 end

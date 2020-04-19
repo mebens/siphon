@@ -1,6 +1,6 @@
 BloodSpurt = class("BloodSpurt", PhysicalEntity)
 
-function BloodSpurt:initialize(x, y, angle, size, scatter, speedFactor)
+function BloodSpurt:initialize(x, y, angle, size, scatter, speedFactor, color)
   PhysicalEntity.initialize(self, x, y, "dynamic")
   self.angle = angle
   self.size = size or 2
@@ -12,6 +12,7 @@ function BloodSpurt:initialize(x, y, angle, size, scatter, speedFactor)
   self.lastX = self.x
   self.lastY = self.y
   self.visible = false
+  self.color = color or MAGENTA
 end
 
 function BloodSpurt:added()
@@ -22,7 +23,7 @@ function BloodSpurt:added()
   self:setMass(0.1)
   self:setLinearDamping(10)
   self:applyLinearImpulse(self.impulse * math.cos(self.angle), self.impulse * math.sin(self.angle))
-  self.world.floorBlood:bleed(self.x, self.y, self.size, self.scatter)
+  self.world.floorBlood:bleed(self.x, self.y, self.size, self.scatter, self.color)
 end
 
 function BloodSpurt:update(dt)
@@ -39,13 +40,14 @@ function BloodSpurt:update(dt)
         self.x + math.cos(angle) * self.interval * i,
         self.y + math.sin(angle) * self.interval * i,
         self.size,
-        self.scatter
+        self.scatter,
+        self.color
       )
     end
   end
   
   if dist >= self.interval then
-    self.world.floorBlood:bleed(self.x, self.y, self.size, self.scatter)
+    self.world.floorBlood:bleed(self.x, self.y, self.size, self.scatter, self.color)
     self.lastX = self.x
     self.lastY = self.y
   end

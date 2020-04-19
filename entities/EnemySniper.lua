@@ -4,7 +4,8 @@ EnemySniper.SPEED = 70
 EnemySniper.RETREAT_SPEED = 100
 EnemySniper.MELEE_DAMAGE = 5
 EnemySniper.IDEAL_RANGE = 100
-EnemySniper.RANGE_SPREAD = 30
+EnemySniper.MIN_RANGE = 80
+EnemySniper.MAX_RANGE = 200
 EnemySniper.SHOOT_DAMAGE = 40
 EnemySniper.SHOOT_COOLDOWN = 1.5
 
@@ -32,15 +33,13 @@ function EnemySniper:attackRoutine(dt)
 
   local dir = 0
 
-  if dist < EnemySniper.IDEAL_RANGE - EnemySniper.RANGE_SPREAD then
+  if dist < EnemySniper.MIN_RANGE then
     dir = -1
-  elseif dist > EnemySniper.IDEAL_RANGE + EnemySniper.RANGE_SPREAD then
-    dir = 1
-  elseif self.shootTimer > 0 then
-    dir = math.sign(math.round(dist - EnemySniper.IDEAL_RANGE)) -- move to ideal range
   else
-    -- should do some sort of visual confirmation, maybe ray cast
-    self:shoot()
+    dir = dist > EnemySniper.IDEAL_RANGE and 1 or 0
+    if dist < self.MAX_RANGE and self.shootTimer <= 0 then
+      self:shoot()
+    end
   end
 
   if dir == 0 and self.map.current ~= "standing" then

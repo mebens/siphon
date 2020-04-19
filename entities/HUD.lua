@@ -45,10 +45,10 @@ self.health:draw()
 
   local p = self.world.player
   postfx.include()
-  self:drawAbility(1, assets.images.dashIcon, p.dashTimer, p.DASH_COOLDOWN)
-  self:drawAbility(2, assets.images.lifestealIcon, p.lsCooldownTimer, p.LS_COOLDOWN)
-  self:drawAbility(3, assets.images.rocketIcon, p.rocketTimer, p.ROCKET_COOLDOWN)
-  self:drawAbility(4, assets.images.railIcon, p.railTimer, p.RAIL_COOLDOWN)
+  self:drawAbility(1, assets.images.dashIcon, p.dashTimer, p.SPOOF_COOLDOWN, "LSHIFT")
+  self:drawAbility(2, assets.images.lifestealIcon, p.lsCooldownTimer, p.LS_COOLDOWN, "E")
+  self:drawAbility(3, assets.images.rocketIcon, p.rocketTimer, p.ROCKET_COOLDOWN, "RMB")
+  self:drawAbility(4, assets.images.railIcon, p.railTimer, p.RAIL_COOLDOWN, "LMB")
 end
 
 function HUD:damageWarning()
@@ -71,7 +71,7 @@ function HUD:playerNotHealing()
   self.health.color = {1,1,1,1}
 end
 
-function HUD:drawAbility(index, img, t, max)
+function HUD:drawAbility(index, img, t, max, key)
   local x = love.graphics.width - (self.ABILITY_RADIUS + self.ABILITY_PADDING + (index - 1) * (self.ABILITY_RADIUS * 2 + self.ABILITY_PADDING))
   local y = love.graphics.height - self.ABILITY_RADIUS - self.ABILITY_PADDING
 
@@ -90,6 +90,10 @@ function HUD:drawAbility(index, img, t, max)
     drawArc(x, y, self.ABILITY_RADIUS, 0, math.tau * (1 - t / max), 30)
   end
 
+  postfx.exclude()
   love.graphics.setColor(WHITE)
+  love.graphics.setFont(assets.fonts.main[16])
+  love.graphics.printf(key, (x - self.ABILITY_RADIUS * 1.6) * 2, (y - self.ABILITY_RADIUS - 13) * 2, self.ABILITY_RADIUS * 6, "center")
+  postfx.include()
 end
 

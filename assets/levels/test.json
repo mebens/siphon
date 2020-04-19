@@ -297,7 +297,7 @@
           "y": 88,
           "originX": 0,
           "originY": 0,
-          "values": {"color": "#ffffffff", "radius": 100, "innerRadius": 0, "intensity": 1, "setColor": "MAGENTA"}
+          "values": {"color": "#ffffffff", "radius": 100, "innerRadius": 0, "intensity": 1, "setColor": "MAGENTA", "flicker": 0.1}
         },
         {
           "name": "Light",
@@ -307,7 +307,7 @@
           "y": 167,
           "originX": 0,
           "originY": 0,
-          "values": {"color": "#f20000ff", "radius": 200, "innerRadius": -4, "intensity": 1, "setColor": "CYAN"}
+          "values": {"color": "#f20000ff", "radius": 200, "innerRadius": -4, "intensity": 1, "setColor": "CYAN", "flicker": 0.1}
         },
         {
           "name": "Light",
@@ -317,7 +317,7 @@
           "y": 521,
           "originX": 0,
           "originY": 0,
-          "values": {"color": "#ffffffff", "radius": 300, "innerRadius": 0, "intensity": 1, "setColor": "WHITE"}
+          "values": {"color": "#ffffffff", "radius": 300, "innerRadius": 0, "intensity": 1, "setColor": "WHITE", "flicker": 0.1}
         },
         {
           "name": "Light",
@@ -327,7 +327,7 @@
           "y": 436,
           "originX": 0,
           "originY": 0,
-          "values": {"color": "#00e902ff", "radius": 100, "innerRadius": 0, "intensity": 1, "setColor": "CYAN"}
+          "values": {"color": "#00e902ff", "radius": 100, "innerRadius": 0, "intensity": 1, "setColor": "CYAN", "flicker": 0.1}
         },
         {
           "name": "Light",
@@ -337,7 +337,7 @@
           "y": 287,
           "originX": 0,
           "originY": 0,
-          "values": {"color": "#00f8ffff", "radius": 100, "innerRadius": 0, "intensity": 1, "setColor": "MAGENTA"}
+          "values": {"color": "#00f8ffff", "radius": 100, "innerRadius": 0, "intensity": 1, "setColor": "MAGENTA", "flicker": 0.1}
         }
       ]
     }

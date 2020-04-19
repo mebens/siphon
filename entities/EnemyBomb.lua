@@ -100,7 +100,7 @@ end
 
 function EnemyBomb:collided(other)
   if other:isInstanceOf(Player) and not self.dead then
-    other:damage(self.DIRECT_DAMAGE)
+    other:damage(self.DIRECT_DAMAGE, self.angle)
   elseif other:isInstanceOf(Rocket) then
     other:explode()
   end
@@ -156,7 +156,8 @@ function EnemyBomb:explode()
 
   if dist < self.SPLASH_RADIUS then
     self.world.player:damage(
-      math.min(math.scale(dist, 5, self.SPLASH_RADIUS, self.DIRECT_DAMAGE, self.MIN_DAMAGE), self.DIRECT_DAMAGE)
+      math.min(math.scale(dist, 5, self.SPLASH_RADIUS, self.DIRECT_DAMAGE, self.MIN_DAMAGE), self.DIRECT_DAMAGE),
+      math.angle(self.x, self.y, self.world.player.x, self.world.player.y)
     )
   end
 

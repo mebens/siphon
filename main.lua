@@ -23,15 +23,27 @@ require("entities.Player")
 require("entities.HUD")
 require("entities.BloodSpurt")
 require("entities.FloorBlood")
+require("entities.CheckPoint")
+require("entities.EndPoint")
 require("worlds.Level")
 
 TILE_SIZE = 12
+NO_COOLDOWNS = false
 
 function love.load()
   ammo.db.init()
   ammo.db.addInfo("Lights", function() return ammo.world and ammo.world.lighting.lights.length or 0 end)
+  ammo.db.addInfo("Enemies", function() return Enemy.all.length end)
   ammo.db.settings.alwaysShowInfo = true
   ammo.db.live = true
+
+  function ammo.db.commands:level(name)
+    ammo.world = Level:new(name)
+  end
+
+  ammo.db.commands.nocooldowns = function()
+    NO_COOLDOWNS = not NO_COOLDOWNS
+  end
 
   love.graphics.setDefaultFilter("nearest", "nearest")
 
@@ -49,7 +61,11 @@ function love.load()
   paused = false
 
   -- dev only
-  love.window.setPosition(100, 100)
+  -- love.window.setPosition(100, 100)
+
+  BG_SOUND = assets.sfx.bg:play()
+  BG_SOUND:setLooping(true)
+  BG_SOUND:setVolume(1)
 end
 
 function love.update(dt)
@@ -93,7 +109,7 @@ function love.wheelmoved(dx, dy)
 end
 
 function loadAssets()
-  assets.newFont("square.ttf", { 40, 18, 12, 8 }, "main")
+  assets.newFont("square.ttf", { 40, 18, 16, 12, 8 }, "main")
   assets.shaders("noise.frag", "bloom.frag")
 
   assets.images(
@@ -110,8 +126,10 @@ function loadAssets()
     "rail1.ogg", "rail2.ogg",
     "rocket1.ogg", "rocket2.ogg", "rocket3.ogg",
     "siphon.ogg",
+    "splat.ogg",
     "tankFire1.ogg", "tankFire2.ogg",
-    "windup1.ogg", "windup2.ogg"
+    "windup1.ogg", "windup2.ogg",
+    "bg.ogg"
   )
 end
 

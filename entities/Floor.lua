@@ -10,7 +10,11 @@ function Floor:initialize(width, height)
   self.layer = 10
   self.width = width
   self.height = height
-  self.map = Tilemap:new(assets.images.tiles, TILE_SIZE, TILE_SIZE, width, height)
+  self.canvas = love.graphics.newCanvas(width, height)
+  self.canvas:renderTo(function() love.graphics.clear(1, 1, 1) end)
+
+  -- self.map = Tilemap:new(assets.images.tiles, TILE_SIZE, TILE_SIZE, width, height)
+  -- self.map:setRect(0, 0, self.map.rows, self.map.columns, 1)
   self.highlights = LinkedList:new()
   self.hlMap = {}
   self.highlightTimer = 0
@@ -39,7 +43,10 @@ function Floor:update(dt)
   if self.highlightTimer > 0 then
     self.highlightTimer = self.highlightTimer - dt
   else
-    self:addHighlight(math.random(0, self.world.width), math.random(0, self.world.height))
+    self:addHighlight(
+      math.random(self.world.player.x - love.graphics.width * 0.7, self.world.player.x + love.graphics.width * 0.7),
+      math.random(self.world.player.y - love.graphics.height * 0.7, self.world.player.y + love.graphics.height * 0.7)
+    )
     self.highlightTimer = self.HIGHLIGHT_TIME
   end
 end
@@ -78,7 +85,8 @@ end
 
 function Floor:draw()
   love.graphics.setColor(0.4, 0.4, 0.4)
-  self.map:draw(self.x, self.y)
+  love.graphics.draw(self.canvas)
+  -- self.map:draw(self.x, self.y)
 
   for h in self.highlights:iterate() do
     love.graphics.setColor(h.color[1], h.color[2], h.color[3], h.alpha)

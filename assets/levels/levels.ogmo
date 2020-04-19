@@ -5,7 +5,7 @@
   "backgroundColor": "#282c34ff",
   "gridColor": "#3c4049cc",
   "anglesRadians": true,
-  "directoryDepth": 5,
+  "directoryDepth": 1,
   "layerGridDefaultSize": {"x": 8, "y": 8},
   "levelDefaultSize": {"x": 320, "y": 240},
   "levelMinSize": {"x": 128, "y": 128},
@@ -15,7 +15,7 @@
   "compactExport": false,
   "externalScript": "",
   "playCommand": "",
-  "entityTags": [],
+  "entityTags": ["actor", "collision", "lighting", "zone"],
   "layers": [
     {
       "definition": "entity",
@@ -23,7 +23,7 @@
       "gridSize": {"x": 1, "y": 1},
       "exportID": "18704767",
       "requiredTags": [],
-      "excludedTags": []
+      "excludedTags": ["collision", "lighting"]
     },
     {
       "definition": "tile",
@@ -39,7 +39,7 @@
       "name": "Collision",
       "gridSize": {"x": 12, "y": 12},
       "exportID": "18708052",
-      "requiredTags": [],
+      "requiredTags": ["collision"],
       "excludedTags": []
     },
     {
@@ -56,7 +56,7 @@
       "name": "Lighting",
       "gridSize": {"x": 1, "y": 1},
       "exportID": "19449548",
-      "requiredTags": [],
+      "requiredTags": ["lighting"],
       "excludedTags": []
     }
   ],
@@ -94,7 +94,7 @@
       "nodeLimit": 0,
       "nodeDisplay": 0,
       "nodeGhost": true,
-      "tags": [],
+      "tags": ["actor"],
       "values": []
     },
     {
@@ -130,7 +130,7 @@
       "nodeLimit": 0,
       "nodeDisplay": 0,
       "nodeGhost": true,
-      "tags": [],
+      "tags": ["actor"],
       "values": [
         {
           "name": "type",
@@ -173,7 +173,7 @@
       "nodeLimit": 0,
       "nodeDisplay": 0,
       "nodeGhost": false,
-      "tags": [],
+      "tags": ["collision"],
       "values": []
     },
     {
@@ -209,10 +209,10 @@
       "nodeLimit": 0,
       "nodeDisplay": 0,
       "nodeGhost": true,
-      "tags": [],
+      "tags": ["lighting"],
       "values": [
         {"name": "color", "definition": "Color", "defaults": "#ffffffff", "includeAlpha": false},
-        {"name": "radius", "definition": "Float", "defaults": 100, "bounded": false, "min": 0, "max": 100},
+        {"name": "radius", "definition": "Float", "defaults": 350, "bounded": false, "min": 0, "max": null},
         {"name": "innerRadius", "definition": "Float", "defaults": 0, "bounded": false, "min": 0, "max": 100},
         {"name": "intensity", "definition": "Float", "defaults": 1, "bounded": false, "min": 0, "max": 100},
         {
@@ -220,8 +220,83 @@
           "definition": "Enum",
           "choices": ["NONE", "WHITE", "CYAN", "MAGENTA"],
           "defaults": 0
-        }
+        },
+        {"name": "flicker", "definition": "Float", "defaults": 0.1, "bounded": false, "min": 0, "max": 2}
       ]
+    },
+    {
+      "exportID": "29308852",
+      "name": "EndPoint",
+      "limit": -1,
+      "size": {"x": 12, "y": 12},
+      "origin": {"x": 0, "y": 0},
+      "originAnchored": true,
+      "shape": {
+        "label": "Rectangle",
+        "points": [
+          {"x": -1, "y": -1},
+          {"x": 1, "y": -1},
+          {"x": -1, "y": 1},
+          {"x": 1, "y": -1},
+          {"x": -1, "y": 1},
+          {"x": 1, "y": 1}
+        ]
+      },
+      "color": "#00ffcfff",
+      "tileX": false,
+      "tileY": false,
+      "tileSize": {"x": 16, "y": 16},
+      "resizeableX": true,
+      "resizeableY": true,
+      "rotatable": false,
+      "rotationDegrees": 360,
+      "canFlipX": false,
+      "canFlipY": false,
+      "canSetColor": false,
+      "hasNodes": false,
+      "nodeLimit": 0,
+      "nodeDisplay": 0,
+      "nodeGhost": true,
+      "tags": ["zone"],
+      "values": [
+        {"name": "link", "definition": "String", "defaults": "", "maxLength": 0, "trimWhitespace": true}
+      ]
+    },
+    {
+      "exportID": "29306795",
+      "name": "CheckPoint",
+      "limit": -1,
+      "size": {"x": 12, "y": 12},
+      "origin": {"x": 0, "y": 0},
+      "originAnchored": true,
+      "shape": {
+        "label": "Rectangle",
+        "points": [
+          {"x": -1, "y": -1},
+          {"x": 1, "y": -1},
+          {"x": -1, "y": 1},
+          {"x": 1, "y": -1},
+          {"x": -1, "y": 1},
+          {"x": 1, "y": 1}
+        ]
+      },
+      "color": "#ff8f00ff",
+      "tileX": false,
+      "tileY": false,
+      "tileSize": {"x": 16, "y": 16},
+      "resizeableX": true,
+      "resizeableY": true,
+      "rotatable": false,
+      "rotationDegrees": 360,
+      "canFlipX": false,
+      "canFlipY": false,
+      "canSetColor": false,
+      "hasNodes": false,
+      "nodeLimit": 0,
+      "nodeDisplay": 0,
+      "nodeGhost": true,
+      "tags": ["zone"],
+      "values": []
     }
   ],
   "tilesets": [

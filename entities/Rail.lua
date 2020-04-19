@@ -63,13 +63,6 @@ function Rail:initialize(x, y, angle)
   -- ps:setRadialAcceleration(-math.tau / 2, math.tau / 2)
   ps:setSpeed(5, 100)
   ps:setLinearAcceleration(math.cos(angle) * 10, math.sin(angle) * 10, math.cos(angle) * 50, math.sin(angle) * 50)
-
-  for i = 1, 50 do
-    ps:setPosition(x + math.cos(angle) * i * 10, y + math.sin(angle) * i * 10)
-    ps:emit(10)
-  end
-
-  ps:setPosition(x, y)
   self.backPS = ps
 end
 
@@ -136,8 +129,7 @@ function Rail:cast()
             return 1
           elseif entity:isInstanceOf(Walls) then
             -- add some sort of termination effect here
-            self.endX = x + math.cos(self.angle) * 10
-            self.endY = y + math.sin(self.angle) * 10
+            self:endFound(x + math.cos(self.angle) * 10, y + math.sin(self.angle) * 10)
             return 0
           end
         end
@@ -145,6 +137,23 @@ function Rail:cast()
         return 1
       end
     )
+  end
+end
+
+function Rail:endFound(x, y)
+  self.endX, self.endY = x, y
+
+  if not self.particlesEmitted then
+    local dist = math.dist(self.x, self.y, self.endX, self.endY)
+
+    for i = 1, 30 do
+      self.backPS:setPosition(self.x + math.cos(angle) * (i / 30) * dist, self.y + math.sin(angle) * (i / 30) * dist)
+      self.backPS:emit(10)
+    end
+
+    self.backPS:setPosition(self.x, self.y)
+    DEBUG = dist
+    self.light.length = dist
   end
 end
 

@@ -1,5 +1,5 @@
 EnemyTank = class("EnemyTank", Enemy)
-EnemyTank.BASE_HEALTH = 500
+EnemyTank.BASE_HEALTH = 1000
 EnemyTank.SPEED = 30
 EnemyTank.MELEE_DAMAGE = 10
 EnemyTank.SHOOT_WINDUP = 1
