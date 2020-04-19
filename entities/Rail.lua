@@ -121,8 +121,12 @@ function Rail:cast()
 
         if type(entity) == "table" then
           if entity:isInstanceOf(Enemy) then
-            if entity._rail ~= self then
-              entity._rail = self
+            if entity._rail == nil or entity._rail[self] == nil then
+              if entity._rail == nil then
+                entity._rail = {}
+              end
+
+              entity._rail[self] = true
               entity:damage(self.DAMAGE, self.angle)
             end
 

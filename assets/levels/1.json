@@ -4,6 +4,7 @@
   "height": 3196,
   "offsetX": 0,
   "offsetY": 0,
+  "values": {"intro": "Hold E to siphon an enemy"},
   "layers": [
     {
       "name": "Entities",

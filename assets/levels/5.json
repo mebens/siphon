@@ -4,6 +4,7 @@
   "height": 2748,
   "offsetX": 0,
   "offsetY": 0,
+  "values": {"intro": "Rockets and siphon ugpraded!"},
   "layers": [
     {
       "name": "Entities",
@@ -16,7 +17,7 @@
       "gridCellsY": 2748,
       "entities": [
         {"name": "Player", "id": 0, "_eid": "18663952", "x": 249, "y": 54, "originX": 6, "originY": 6},
-        {"name": "CheckPoint", "id": 1, "_eid": "29306795", "x": 156, "y": 15, "width": 180, "height": 70, "originX": 0, "originY": 0},
+        {"name": "CheckPoint", "id": 1, "_eid": "29306795", "x": 157, "y": 14, "width": 180, "height": 70, "originX": 0, "originY": 0},
         {
           "name": "Enemy",
           "id": 3,
@@ -932,6 +933,18 @@
           "originX": 6,
           "originY": 6,
           "values": {"type": "RUSHER"}
+        },
+        {
+          "name": "EndPoint",
+          "id": 101,
+          "_eid": "29308852",
+          "x": 3094,
+          "y": 2699,
+          "width": 142,
+          "height": 51,
+          "originX": 0,
+          "originY": 0,
+          "values": {"link": "final"}
         }
       ]
     },
@@ -1246,7 +1259,8 @@
         {"name": "Collision", "id": 54, "_eid": "18725040", "x": 3024, "y": 2652, "width": 72, "height": 60, "originX": 0, "originY": 0},
         {"name": "Collision", "id": 55, "_eid": "18725040", "x": 1944, "y": 2412, "width": 576, "height": 36, "originX": 0, "originY": 0},
         {"name": "Collision", "id": 56, "_eid": "18725040", "x": 1620, "y": 1632, "width": 2352, "height": 564, "originX": 0, "originY": 0},
-        {"name": "Collision", "id": 57, "_eid": "18725040", "x": 3228, "y": 2184, "width": 744, "height": 564, "originX": 0, "originY": 0}
+        {"name": "Collision", "id": 57, "_eid": "18725040", "x": 3228, "y": 2184, "width": 744, "height": 564, "originX": 0, "originY": 0},
+        {"name": "Collision", "id": 58, "_eid": "18725040", "x": 156, "y": 0, "width": 192, "height": 24, "originX": 0, "originY": 0}
       ]
     },
     {

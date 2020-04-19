@@ -13,7 +13,7 @@ function noise:update(dt)
     -- a 2d random factor seems to reduce the size of the occasional "artifacts"
     self.effect:send("factor", { math.random(), math.random() })
 
-    if ammo.world then
+    if ammo.world and ammo.world.player then
       self.effect:send("clamp", 0.96 - 0.03 * (1 - ammo.world.player.health / Player.BASE_HEALTH))
     end
 

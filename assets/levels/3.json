@@ -4,6 +4,7 @@
   "height": 2544,
   "offsetX": 0,
   "offsetY": 0,
+  "values": {"intro": "Rockets upgraded!"},
   "layers": [
     {
       "name": "Entities",

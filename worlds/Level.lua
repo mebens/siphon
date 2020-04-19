@@ -33,6 +33,11 @@ function Level:initialize(levelName)
   self.floorBlood = FloorBlood:new(self.width, self.height)
   self.hud = HUD:new()
   self:add(self.hud, self.floorBlood)
+
+  if self.data.values.intro ~= "" then
+    self.hud:introText(self.data.values.intro)
+  end
+
   self.layer = 0
 end
 
@@ -59,7 +64,7 @@ function Level:addEntities()
 
   for i, entity in ipairs(self:getLayerData("Entities")) do
     if entity.name == "Player" and not self.player then
-      self.player = Player:new(entity.x, entity.y)
+      self.player = Player:new(entity.x, entity.y, self.name)
       self:add(self.player)
     elseif entity.name == "Enemy" then
       self:add(Enemy.fromData(entity))

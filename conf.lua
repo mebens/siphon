@@ -1,7 +1,7 @@
 function love.conf(t)
   t.author = "Michael Ebens"
-  t.title = "LD 46"
+  t.title = "SIPHON"
   t.window.width = 1400
-  t.window.height = 1000
+  t.window.height = 900
   t.window.vsync = true
 end

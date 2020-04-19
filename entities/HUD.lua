@@ -13,7 +13,21 @@ function HUD:initialize()
   self.health = Text:new{x=0, width=love.graphics.width * 2, padding=10, font=assets.fonts.main[40], shadow=true}
   self.health.y = love.graphics.height * 2 - self.health.fontHeight - HUD.Y_PADDING
   -- self.weapon = Text:new{x=0, y=0, width=love.graphics.width * 2, padding=5, font=assets.fonts.main[24], shadow=true, align="right"}
+  self.intro = Text:new{"", x=0, width = love.graphics.width * 2, y=love.graphics.height + 100, padding=10, font=assets.fonts.main[24], shadow=true, align="center"}
+  self.intro.color[4] = 0
   self.damagedTimer = 0
+end
+
+function HUD:introText(text)
+  self.intro.text = text
+end
+
+function HUD:added()
+  tween(self.intro.color, 0.5, { [4] = 1 }, nil, function() 
+    delay(6, function()
+      tween(self.intro.color, 0.3, { [4] = 0 })
+    end)
+  end)
 end
 
 function HUD:update(dt)
@@ -40,7 +54,8 @@ end
 
 
 function HUD:draw()
-self.health:draw()
+  self.health:draw()
+  self.intro:draw()
   -- self.weapon:draw()
 
   local p = self.world.player

@@ -9,6 +9,7 @@ Player.HEALTH_DRAIN = 2
 Player.SPOOF_COOLDOWN = 0.8
 Player.RAIL_COOLDOWN = 0.8
 Player.ROCKET_COOLDOWN = 1.2
+Player.VOLLEY_DELAY = 0.15
 
 Player.LS_RATE = 35
 Player.LS_CONVERSION = 1
@@ -27,7 +28,7 @@ Player.height = 12
 -- Player.image = getRectImage(Player.width, Player.height)
 
 
-function Player:initialize(x, y)
+function Player:initialize(x, y, levelName)
   PhysicalEntity.initialize(self, x, y, "dynamic")
   self.layer = 4
   self.image = assets.images.player
@@ -35,10 +36,11 @@ function Player:initialize(x, y)
   self.legMap:add("run", { 1, 2, 3, 4, 5, 6, 7, 8 }, 18, true)
 
   -- initial stated
-  self.health = self.BASE_HEALTH
+  self.health = self.BASE_HEALTH  
 
   -- timers
   self:resetStats()
+  self:setUpgrades(levelName)
 
   -- particles
   local ps = love.graphics.newParticleSystem(assets.images.smoke, 500)
@@ -86,7 +88,28 @@ function Player:resetStats()
   self.lsCooldownTimer = 0
   self.dashTimer = 0
   self.lsTarget = nil
+
+  self.rocketVolley = 1
+  self.homingRockets = false
+  self.rails = 1
 end
+
+function Player:setUpgrades(level)
+  ammo.db.log(level)
+  level = tonumber(level)
+
+  if level == 3 then
+    self.rocketVolley = 2
+  elseif level == 4 then
+    self.rocketVolley = 2
+    self.rails = 2
+  elseif level == 5 then
+    self.rocketVolley = 3
+    self.rails = 2
+    self.LS_RATE = 50
+  end
+end
+
 
 function Player:added()
   self:setupBody()
@@ -197,12 +220,26 @@ end
 
 function Player:attackRailgun()
   self.world:add(Rail:new(self.x, self.y, self.angle))
+
+  if self.rails == 2 then
+    self.world:add(Rail:new(self.x, self.y, self.angle))
+  end
+
   self.railTimer = NO_COOLDOWNS and 0 or self.RAIL_COOLDOWN
   playRandom{"rail1", "rail2"}
 end
 
 function Player:attackRocket()
   self.world:add(Rocket:new(self.x, self.y, self.angle))
+
+  if self.rocketVolley > 1 then
+    for i = 1, self.rocketVolley - 1 do
+      delay(i * self.VOLLEY_DELAY, function()
+        self.world:add(Rocket:new(self.x, self.y, self.angle, self.homingRockets))
+      end)
+    end
+  end
+
   self.rocketTimer = NO_COOLDOWNS and 0 or self.ROCKET_COOLDOWN
   playRandom{"rocket1", "rocket2", "rocket3"}
 end
@@ -218,6 +255,7 @@ function Player:damage(amount, angle)
 
   if amount > 5 then
     self.world.hud:playerDamaged()
+    playRandom{"hit1", "hit2"}
 
     if angle then
       self.world:add(BloodSpurt:new(self.x, self.y, angle, 2, 2, 1, CYAN))

@@ -3,6 +3,7 @@ Rocket.SPEED = 400
 Rocket.DIRECT_DAMAGE = 130
 Rocket.MIN_DAMAGE = 30
 Rocket.SPLASH_RADIUS = 100
+Rocket.HOMING_DIST = 80
 
 Rocket.LIGHT_RADIUS = 200
 Rocket.LIGHT_IMAGE = Light.createCircularImage(Rocket.LIGHT_RADIUS, 2)
@@ -10,12 +11,13 @@ Rocket.LIGHT_IMAGE = Light.createCircularImage(Rocket.LIGHT_RADIUS, 2)
 Rocket.width = 10
 Rocket.height = 3
 
-function Rocket:initialize(x, y, angle)
+function Rocket:initialize(x, y, angle, homing)
   PhysicalEntity.initialize(self, x, y, "dynamic")
   self.layer = 6
   self.image = assets.images.rocket
   self.angle = angle
   self.dead = false
+  self.homing = homing
 
   self.light = Light:new(Rocket.LIGHT_IMAGE, self.x, self.y, Rocket.LIGHT_RADIUS, 0.8)
   self.light.color = WHITE

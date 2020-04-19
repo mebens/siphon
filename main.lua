@@ -26,15 +26,21 @@ require("entities.FloorBlood")
 require("entities.CheckPoint")
 require("entities.EndPoint")
 require("worlds.Level")
+require("worlds.Intro")
+require("worlds.Final")
+
 
 TILE_SIZE = 12
 NO_COOLDOWNS = false
 
 function love.load()
+  local cursor = love.mouse.newCursor("assets/images/crosshair.png", 7, 7)
+  love.mouse.setCursor(cursor)
+  
   ammo.db.init()
   ammo.db.addInfo("Lights", function() return ammo.world and ammo.world.lighting.lights.length or 0 end)
   ammo.db.addInfo("Enemies", function() return Enemy.all.length end)
-  ammo.db.settings.alwaysShowInfo = true
+  -- ammo.db.settings.alwaysShowInfo = true
   ammo.db.live = true
 
   function ammo.db.commands:level(name)
@@ -57,7 +63,7 @@ function love.load()
   love.graphics.width = love.graphics.width / 2
   love.graphics.height = love.graphics.height / 2
 
-  ammo.world = Level:new()
+  ammo.world = Intro:new()
   paused = false
 
   -- dev only
@@ -86,20 +92,13 @@ function love.draw()
   postfx.start()
   ammo.draw()
   postfx.stop()
-
-  -- print DEBUG message
-  if DEBUG then
-    love.graphics.setFont(assets.fonts.main[12])
-    love.graphics.printf(DEBUG, 5, 5, love.graphics.width - 10, "center")
-  end
-
   ammo.db.draw()
 end
 
 function love.keypressed(key, code)
   input.keypressed(key)
   ammo.db.keypressed(key, code)
-  if key == "p" then paused = not paused end
+  -- if key == "p" then paused = not paused end
   -- if key == "r" then ammo.world = Level:new() end
 end
 
@@ -109,7 +108,7 @@ function love.wheelmoved(dx, dy)
 end
 
 function loadAssets()
-  assets.newFont("square.ttf", { 40, 18, 16, 12, 8 }, "main")
+  assets.newFont("square.ttf", { 160, 72, 40, 24, 18, 16, 12, 8 }, "main")
   assets.shaders("noise.frag", "bloom.frag")
 
   assets.images(
@@ -129,6 +128,7 @@ function loadAssets()
     "splat.ogg",
     "tankFire1.ogg", "tankFire2.ogg",
     "windup1.ogg", "windup2.ogg",
+    "hit1.ogg", "hit2.ogg",
     "bg.ogg"
   )
 end

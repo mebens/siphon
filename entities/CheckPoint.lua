@@ -47,7 +47,7 @@ function CheckPoint:use()
     end
   end
 
-  self.world.player = Player:new(self.x, self.y)
+  self.world.player = Player:new(self.x, self.y, self.world.name)
   self.world:add(self.world.player)
 end
 

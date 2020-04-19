@@ -16,7 +16,12 @@ end
 
 function EndPoint:activate()
   self.activated = true
-  ammo.world = Level:new(self.link)
+
+  if self.link == "final" then
+    ammo.world = Final:new()
+  else
+    ammo.world = Level:new(self.link)
+  end
 end
 
 function EndPoint:collided(other)

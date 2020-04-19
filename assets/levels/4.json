@@ -4,6 +4,7 @@
   "height": 2988,
   "offsetX": 0,
   "offsetY": 0,
+  "values": {"intro": "Railgun upgraded!"},
   "layers": [
     {
       "name": "Entities",
