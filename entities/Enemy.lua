@@ -1,20 +1,28 @@
 Enemy = class("Enemy", PhysicalEntity)
 Enemy.static.all = LinkedList:new("_nextEnemy", "_prevEnemy")
-
-Enemy.BASE_HEALTH = 100
-Enemy.MELEE_DAMAGE = 25
 Enemy.MELEE_COOLDOWN = 1
-Enemy.width = 12
-Enemy.height = 12
-Enemy.image = getRectImage(12, 12, 255, 0, 0)
+Enemy.DEATH_BLOOD = 1
+Enemy.DEATH_BLOOD_SCATTER = 6
+
+function Enemy.static.fromData(enemy)
+  if enemy.values.type == "RUSHER" then
+    return EnemyRusher:new(enemy.x, enemy.y)
+  elseif enemy.values.type == "SNIPER" then
+    return EnemySniper:new(enemy.x, enemy.y)
+  elseif enemy.values.type == "TANK" then
+    return EnemyTank:new(enemy.x, enemy.y)
+  end
+end
+
 
 function Enemy:initialize(x, y)
   PhysicalEntity.initialize(self, x, y, "dynamic")
   self.layer = 5
-  self.health = Enemy.BASE_HEALTH
+  self.scale = 1
+  self.health = self.BASE_HEALTH
   self.draining = false
-  self.speed = 70
   self.meleeTimer = 0
+  self.shootTimer = 0
 end
 
 function Enemy:added()
@@ -30,11 +38,23 @@ function Enemy:removed()
 end
 
 function Enemy:update(dt)
+  if self.dead then
+    return
+  end
+
   PhysicalEntity.update(self, dt)
   self:setAngularVelocity(0)
 
+  if self.map then
+    self.map:update(dt)
+  end
+
   if self.meleeTimer > 0 then
     self.meleeTimer = self.meleeTimer - dt
+  end
+
+  if self.shootTimer > 0 then
+    self.shootTimer = self.shootTimer - dt
   end
 
   if not self.draining then
@@ -42,14 +62,14 @@ function Enemy:update(dt)
   end
 end
 
-function Enemy:attackRoutine(dt)
-  self.angle = math.angle(self.x, self.y, self.world.player.x, self.world.player.y)
-  self.velx = math.cos(self.angle) * self.speed
-  self.vely = math.sin(self.angle) * self.speed
-end
+function Enemy:attackRoutine(dt) end
 
 function Enemy:draw()
-  self:drawImage()
+  if self.map then
+    self.map:draw(self.x, self.y, self.angle, self.scale, self.scale, self.originX or self.width / 2, self.originY or self.height / 2)
+  elseif self.image then
+    self:drawImage()
+  end
 end
 
 function Enemy:collided(other)
@@ -65,10 +85,15 @@ function Enemy:meleeAttack()
   self.meleeTimer = self.MELEE_COOLDOWN
 end
 
-function Enemy:damage(amount)
+function Enemy:damage(amount, angle)
   self.health = self.health - amount
+  self.world:add(BloodSpurt:new(self.x, self.y, angle, 2))
 
   if self.health <= 0 then
+    for i = 1, self.DEATH_BLOOD do
+      self.world:add(BloodSpurt:new(self.x, self.y, math.tau * math.random(), self.DEATH_BLOOD_SCATTER, self.DEATH_BLOOD_SCATTER, 1))
+    end
+
     self:die()
   end
 end

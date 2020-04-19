@@ -131,7 +131,14 @@
       "nodeDisplay": 0,
       "nodeGhost": true,
       "tags": [],
-      "values": []
+      "values": [
+        {
+          "name": "type",
+          "definition": "Enum",
+          "choices": ["RUSHER", "SNIPER", "TANK"],
+          "defaults": 0
+        }
+      ]
     },
     {
       "exportID": "18725040",

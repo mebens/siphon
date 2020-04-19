@@ -12,10 +12,17 @@ require("entities.Lighting")
 require("entities.Walls")
 require("entities.Floor")
 require("entities.Enemy")
+require("entities.EnemyRusher")
+require("entities.EnemySniper")
+require("entities.EnemyTank")
+require("entities.EnemyBullet")
+require("entities.EnemyBomb")
 require("entities.Rocket")
 require("entities.Rail")
 require("entities.Player")
 require("entities.HUD")
+require("entities.BloodSpurt")
+require("entities.FloorBlood")
 require("worlds.Level")
 
 TILE_SIZE = 12
@@ -86,9 +93,26 @@ function love.wheelmoved(dx, dy)
 end
 
 function loadAssets()
-  assets.newFont("square.ttf", { 24, 18, 12, 8 }, "main")
-  assets.images("tiles.png", "rocket.png", "smoke.png", "tinyParticle.png")
+  assets.newFont("square.ttf", { 40, 18, 12, 8 }, "main")
   assets.shaders("noise.frag", "bloom.frag")
+
+  assets.images(
+    "tiles.png", "rocket.png", "bomb.png", "rusher.png", "sniper.png", "tank.png", "player.png", "legs.png",
+    "smoke.png", "tinyParticle.png",
+    "railIcon.png", "rocketIcon.png", "lifestealIcon.png", "dashIcon.png"
+  )
+
+  assets.sfx(
+    "ability1.ogg", "ability2.ogg", "ability3.ogg", "ability4.ogg", 
+    "dash1.ogg", "dash2.ogg",
+    "explosion1.ogg", "explosion2.ogg", "explosion3.ogg", "explosion4.ogg", 
+    "laser1.ogg", "laser2.ogg", "laser3.ogg",
+    "rail1.ogg", "rail2.ogg",
+    "rocket1.ogg", "rocket2.ogg", "rocket3.ogg",
+    "siphon.ogg",
+    "tankFire1.ogg", "tankFire2.ogg",
+    "windup1.ogg", "windup2.ogg"
+  )
 end
 
 function defineInputMappings()
@@ -96,12 +120,11 @@ function defineInputMappings()
   input.define("right", "d", "right")
   input.define("up", "w", "up")
   input.define("down", "s", "down")
-  input.define{"shoot", mouse=1}
+  input.define{"railgun", mouse=1}
+  input.define{"rocket", mouse=2}
   input.define("melee", "f")
   input.define("lifesteal", "e")
-
-  input.define{"prevwep", wheel="up"}
-  input.define{"nextwep", wheel="down"}
+  input.define("dash", "lshift")
 
   input.define("quit", "escape")
 end

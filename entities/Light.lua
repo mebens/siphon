@@ -41,7 +41,7 @@ function Light.static.fromData(light)
   return l
 end
 
-function Light:initialize(img, x, y, radius)
+function Light:initialize(img, x, y, radius, flicker)
   Entity.initialize(self, x, y)
   self.visible = false
   self.image = img
@@ -56,7 +56,7 @@ function Light:initialize(img, x, y, radius)
 
   self.color = {1, 1, 1}
   self.alpha = 1
-  self.flicker = 0.1
+  self.flicker = flicker or 0.1
   self.fadeOutRate = nil
 end
 
@@ -91,7 +91,8 @@ function Light:fadeOut(time)
 end
 
 function Light:draw()
-  love.graphics.setColor(self.color[1], self.color[2], self.color[3], self.alpha - self.flicker / 2 + math.random() * self.flicker)
+  local alpha = self.alpha - self.alpha * self.flicker + math.random() * self.flicker
+  love.graphics.setColor(self.color[1], self.color[2], self.color[3], alpha)
 
   if self.type == "rect" then
     local scaleX = 1

@@ -1,40 +1,46 @@
 Player = class("Player", PhysicalEntity)
-Player.SPEED = 3000 * 60
+Player.SPEED = 1500
+Player.DASH_FORCE = 1000
 Player.BASE_HEALTH = 100
+Player.MAX_HEALTH = 150
 Player.HEALTH_DRAIN = 2
+
+Player.DASH_COOLDOWN = 0.8
+Player.RAIL_COOLDOWN = 0.8
+Player.ROCKET_COOLDOWN = 1.2
 
 Player.LS_RATE = 35
 Player.LS_CONVERSION = 0.5
 Player.LS_MOVEMENT = 0.1
-Player.LS_RANGE = 100
-Player.LS_SPREAD = math.tau * 0.4
+Player.LS_RANGE = 80
+Player.LS_SPREAD = math.tau / 2
 Player.LS_COOLDOWN = 2
-
-Player.width = 12
-Player.height = 12
-Player.image = getRectImage(Player.width, Player.height)
-
-Player.WEAPONS = {
-  {index=1, name="Railgun", attackTime=0.8, swapTime=0.4, class=Rail},
-  {index=2, name="Rocket", attackTime=1.2, swapTime=0.5, class=Rocket},
-  -- {index=3, name="Blade", attackTime=0.5, swapTime=0.5, damage=60},
-}
 
 Player.LS_LIGHT_HEIGHT = 50
 Player.LS_LIGHT = Light.createRectImage(Player.LS_RANGE, Player.LS_LIGHT_HEIGHT)
+Player.LS_CLIGHT_RADIUS = 120
+Player.LS_CLIGHT = Light.createCircularImage(Player.LS_CLIGHT_RADIUS)
+
+Player.width = 12
+Player.height = 12
+-- Player.image = getRectImage(Player.width, Player.height)
+
 
 function Player:initialize(x, y)
   PhysicalEntity.initialize(self, x, y, "dynamic")
   self.layer = 4
+  self.image = assets.images.player
+  self.legMap = Spritemap:new(assets.images.legs, 11, 12)
+  self.legMap:add("run", { 1, 2, 3, 4, 5, 6, 7, 8 }, 18, true)
 
-  -- initial state
+  -- initial stated
   self.health = self.BASE_HEALTH
-  self:swapWeapon(1)
 
   -- timers
-  self.swapTimer = 0
-  self.attackTimer = 0
+  self.railTimer = 0
+  self.rocketTimer = 0
   self.lsCooldownTimer = 0
+  self.dashTimer = 0
 
   -- particles
   local ps = love.graphics.newParticleSystem(assets.images.smoke, 500)
@@ -63,10 +69,17 @@ function Player:initialize(x, y)
   self.lsWhirlPS = ps
   self.lsWhirlAngle = 0
 
-  self.lsLight = Light:new(self.LS_LIGHT, self.x, self.y, self.LS_LIGHT_HEIGHT / 2)
+  self.lsLight = Light:new(self.LS_LIGHT, self.x, self.y, self.LS_LIGHT_HEIGHT / 2, 0.8)
   self.lsLight.type = "rect"
   self.lsLight.color = CYAN
-  self.lsLight.flicker = 0.8
+
+  self.lsCLight = Light:new(self.LS_CLIGHT, self.x, self.y, self.LS_CLIGHT_RADIUS, 0.8)
+  self.lsCLight.color = CYAN
+
+  self.siphonSfx = assets.sfx.siphon:play()
+  self.siphonSfx:setLooping(true)
+  self.siphonVolume = 0
+  self.siphonSfx:setVolume(self.siphonVolume)
 end
 
 function Player:added()
@@ -83,22 +96,46 @@ function Player:update(dt)
   self.lsWhirlPS:update(dt)
   self:setAngularVelocity(0)
 
-  -- movement
-  self.angle = math.angle(self.x, self.y, mouseCoords())
-  local dir = self:getDirection()
-  if dir then
-    local speed = self.SPEED
-    if self.lsTarget then speed = speed * self.LS_MOVEMENT end
-    self:applyForce(speed * math.cos(dir) * dt, speed * math.sin(dir) * dt)
-  end
-
   -- health drain
   self:damage(self.HEALTH_DRAIN * dt)
   -- self.health = self.health - self.HEALTH_DRAIN * dt
 
+  -- movement
+  self.angle = math.angle(self.x, self.y, mouseCoords())
+  self.moveDirection = self:getDirection()
+  if self.moveDirection then
+    local speed = self.SPEED
+    if self.lsTarget then speed = speed * self.LS_MOVEMENT end
+    self:applyForce(speed * math.cos(self.moveDirection), speed * math.sin(self.moveDirection))
+  end
+
+
+  if not self.moveDirection then
+    self.legMap.frame = 1
+  elseif self.legMap.current ~= "run" then
+    self.legMap:play("run")
+  end
+
+  self.legMap:update(dt)
+
+  -- dash
+  if self.dashTimer > 0 then
+    self.dashTimer = self.dashTimer - dt
+
+    if self.dashTimer <= 0 then
+      -- playSound("ability4")
+    end
+  elseif input.down("dash") and self.moveDirection then
+    self:dash(self.moveDirection)
+  end
+
   -- life steal
   if self.lsCooldownTimer > 0 then
     self.lsCooldownTimer = self.lsCooldownTimer - dt
+
+    if self.lsCooldownTimer <= 0 then
+      -- playSound("ability3")
+    end
   end
 
   if input.down("lifesteal") then
@@ -107,26 +144,30 @@ function Player:update(dt)
     self:endLifeSteal()
   end
 
-  -- weapon swap
-  if input.pressed("nextwep") then
-    self:swapWeapon(self.weapon.index + 1)
-  elseif input.pressed("prevwep") then
-    self:swapWeapon(self.weapon.index - 1)
-  end
-
-  if self.swapTimer > 0 then
-    self.swapTimer = self.swapTimer - dt
-    return -- can't do anything else if swapping
-  end
-
   -- attack
   if not self.lsTarget then
-    if self.attackTimer > 0 then
-      self.attackTimer = self.attackTimer - dt
-    elseif input.down("shoot") then
-      self:attack(dt)
+    if self.railTimer > 0 then
+      self.railTimer = self.railTimer - dt
+
+      if self.railTimer <= 0 then
+        -- playSound("ability1")
+      end
+    elseif input.down("railgun") then
+      self:attackRailgun()
+    end
+
+    if self.rocketTimer > 0 then
+      self.rocketTimer = self.rocketTimer - dt
+
+      if self.rocketTimer <= 0 then
+        -- playSound("ability2")
+      end
+    elseif input.down("rocket") then
+      self:attackRocket()
     end
   end
+
+  self.siphonSfx:setVolume(self.siphonVolume)
 end
 
 function Player:draw()
@@ -136,19 +177,34 @@ function Player:draw()
 
   love.graphics.draw(self.lsSmokePS)
   love.graphics.draw(self.lsWhirlPS)
+  self.legMap:draw(self.x, self.y, self.moveDirection, 1.6, 1.6, 11 / 2, 12 / 2)
   self:drawImage()
 end
 
-function Player:attack(dt)
-  if self.weapon.class then
-    self.world:add(self.weapon.class:new(self.x, self.y, self.angle))
-  end
+function Player:attackRailgun()
+  self.world:add(Rail:new(self.x, self.y, self.angle))
+  self.railTimer = self.RAIL_COOLDOWN
+  playRandom{"rail1", "rail2"}
+end
 
-  self.attackTimer = self.weapon.attackTime
+function Player:attackRocket()
+  self.world:add(Rocket:new(self.x, self.y, self.angle))
+  self.rocketTimer = self.ROCKET_COOLDOWN
+  playRandom{"rocket1", "rocket2", "rocket3"}
+end
+
+function Player:dash(angle)
+  self:applyLinearImpulse(self.DASH_FORCE * math.cos(angle), self.DASH_FORCE * math.sin(angle))
+  self.dashTimer = self.DASH_COOLDOWN
+  playRandom{"dash1", "dash2"}
 end
 
 function Player:damage(amount)
-  self.health = self.health - amount
+  self.health = math.clamp(self.health - amount, 0, self.MAX_HEALTH)
+
+  if amount > 5 then
+    self.world.hud:playerDamaged()
+  end
 
   if self.health <= 0 then
     self:die()
@@ -169,7 +225,7 @@ function Player:lifeSteal(dt)
     self.lsSmokePS:setDirection(math.angle(self.lsTarget.x, self.lsTarget.y, self.x, self.y))
     self.lsWhirlAngle = self.lsWhirlAngle + math.tau * 3 * dt 
 
-    local whirlDist = math.scale(self.lsTarget.health, 0, Enemy.BASE_HEALTH, 3, 35)
+    local whirlDist = math.scale(self.lsTarget.health, 0, self.lsTarget.BASE_HEALTH, 3, 35)
     self.lsWhirlPS:setPosition(
       self.x + math.cos(self.lsWhirlAngle) * whirlDist,
       self.y + math.sin(self.lsWhirlAngle) * whirlDist
@@ -209,8 +265,10 @@ function Player:startLifeSteal()
     closest:isTarget()
     self.lsSmokePS:start()
     self.lsWhirlPS:start()
-    self.world:add(self.lsLight)
+    self.world:add(self.lsLight, self.lsCLight)
     self:updateLSLight()
+    self.world.hud:playerHealing()
+    self:animate(0.3, {siphonVolume=1})
   end
 end
 
@@ -224,7 +282,9 @@ function Player:endLifeSteal()
   self.lsCooldownTimer = self.LS_COOLDOWN
   self.lsSmokePS:stop()
   self.lsWhirlPS:stop()
-  self.world:remove(self.lsLight)
+  self.world:remove(self.lsLight, self.lsCLight)
+  self.world.hud:playerNotHealing()
+  self:animate(0.6, {siphonVolume=0})
 end
 
 function Player:updateLSLight()
@@ -232,18 +292,9 @@ function Player:updateLSLight()
   self.lsLight.y = self.y
   self.lsLight.angle = math.angle(self.x, self.y, self.lsTarget.x, self.lsTarget.y)
   self.lsLight.length = math.dist(self.x, self.y, self.lsTarget.x, self.lsTarget.y)
-end
-
-function Player:swapWeapon(index)
-  if index < 1 then
-    index = #self.WEAPONS
-  elseif index > #self.WEAPONS then
-    index = 1
-  end
-
-  self.weapon = self.WEAPONS[index]
-  self.swapTimer = self.weapon.swapTime
-  self.attackTimer = 0
+  self.lsCLight.x = self.x
+  self.lsCLight.y = self.y
+  self.lsCLight.alpha = 0.5 + 0.5 * (1 - self.lsTarget.health / self.lsTarget.BASE_HEALTH)
 end
 
 function Player:getDirection()

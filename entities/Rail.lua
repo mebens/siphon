@@ -10,7 +10,7 @@ function RailLight:initialize(x, y, angle)
   self.angle = angle
   self.velx = self.SPEED * math.cos(angle)
   self.vely = self.SPEED * math.sin(angle)
-  self.color = MAGENTA
+  self.color = CYAN
 end
 
 function RailLight:update(dt)
@@ -46,14 +46,15 @@ function Rail:initialize(x, y, angle)
   self.light = Light:new(self.LIGHT_IMAGE, self.x, self.y, Rail.LIGHT_HEIGHT / 2)
   self.light.type = "rect"
   self.light.angle = self.angle
-  self.light.color = MAGENTA
+  self.light.color = CYAN
   self.light.alpha = 0.7
 
   local ps = love.graphics.newParticleSystem(assets.images.smoke, 1000)
   ps:setSpread(math.tau / 32)
   ps:setDirection((angle + math.tau / 2) % math.tau)
   ps:setLinearDamping(0.5)
-  ps:setColors(243/255, 11/255, 159/255, 1, 243/255, 11/255, 159/255, 0.7, 243/255, 11/255, 159/255, 0)
+  -- ps:setColors(243/255, 11/255, 159/255, 1, 243/255, 11/255, 159/255, 0.7, 243/255, 11/255, 159/255, 0)
+  ps:setColors(63/255, 209/255, 232/255, 1, 63/255, 209/255, 232/255, 0.7, 63/255, 209/255, 232/255, 0)
   ps:setParticleLifetime(2, 3)
   ps:setSizes(0.5, 0.1)
   ps:setSizeVariation(0.5)
@@ -127,9 +128,9 @@ function Rail:cast()
 
         if type(entity) == "table" then
           if entity:isInstanceOf(Enemy) then
-            if not self:haveTagged(entity) then
-              entity:damage(self.DAMAGE)
-              self.tagged[#self.tagged + 1] = enemy
+            if entity._rail ~= self then
+              entity._rail = self
+              entity:damage(self.DAMAGE, self.angle)
             end
 
             return 1
@@ -161,7 +162,7 @@ function Rail:draw()
   love.graphics.draw(self.backPS)
 
   if not self.effectOver then
-    love.graphics.setColor(MAGENTA)
+    love.graphics.setColor(CYAN)
     love.graphics.setLineWidth(4)
     love.graphics.line(self.x, self.y, self.endX, self.endY)
     love.graphics.setColor(1,1,1)
