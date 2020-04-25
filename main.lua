@@ -98,7 +98,7 @@ end
 function love.keypressed(key, code)
   input.keypressed(key)
   ammo.db.keypressed(key, code)
-  -- if key == "p" then paused = not paused end
+  if key == "p" then paused = not paused end
   -- if key == "r" then ammo.world = Level:new() end
 end
 

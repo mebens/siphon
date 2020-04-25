@@ -251,6 +251,7 @@ function Player:pingSpoof(angle)
 end
 
 function Player:damage(amount, angle)
+  if self.dead then return end
   self.health = math.clamp(self.health - amount, 0, self.MAX_HEALTH)
 
   if amount > 5 then
